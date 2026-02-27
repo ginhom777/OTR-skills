@@ -71,29 +71,38 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
     sheet_path = get_sheet_path(zf)
     xml = zf.read(sheet_path).decode("utf-8")
 
-    m = re.search(r"<sheetData>(.*?)</sheetData>", xml, flags=re.S)
-    src_sheetdata = m.group(1)
-    header_rows = "".join(re.findall(r"<row\b.*?</row>", src_sheetdata, flags=re.S)[:2])
+    # Plain output (no template header/style/formula reuse)
+    header = (
+        '<row r="1" spans="1:8">'
+        '<c r="A1" t="inlineStr"><is><t>用户ID</t></is></c>'
+        '<c r="B1" t="inlineStr"><is><t>用户姓名</t></is></c>'
+        '<c r="C1" t="inlineStr"><is><t>DIC是否在职</t></is></c>'
+        '<c r="D1" t="inlineStr"><is><t>是否使用OTR+</t></is></c>'
+        '<c r="E1" t="inlineStr"><is><t>经销商ID</t></is></c>'
+        '<c r="F1" t="inlineStr"><is><t>经销商名称</t></is></c>'
+        '<c r="G1" t="inlineStr"><is><t>特殊说明</t></is></c>'
+        '<c r="H1" t="inlineStr"><is><t>声明</t></is></c>'
+        '</row>'
+    )
 
     body = []
-    for i, (uid, name) in enumerate(records, start=3):
-        formula = f'IF(C{i}="否","确认删除DIC与OTR账号",IF(C{i}="离职","确认删除DIC与OTR账号",""))'
+    for i, (uid, name) in enumerate(records, start=2):
         body.append(
             f'<row r="{i}" spans="1:8">'
-            f'<c r="A{i}" s="6" t="inlineStr"><is><t>{escape(uid)}</t></is></c>'
-            f'<c r="B{i}" s="6" t="inlineStr"><is><t>{escape(name)}</t></is></c>'
-            f'<c r="C{i}" s="7" t="inlineStr"><is><t>是</t></is></c>'
-            f'<c r="D{i}" s="7" t="inlineStr"><is><t>是</t></is></c>'
-            f'<c r="E{i}" s="12" t="inlineStr"><is><t>{escape(dealer_id)}</t></is></c>'
-            f'<c r="F{i}" s="8" t="inlineStr"><is><t>{escape(dealer_name)}</t></is></c>'
-            f'<c r="G{i}" s="6" />'
-            f'<c r="H{i}" s="2" t="str"><f>{escape(formula)}</f></c>'
+            f'<c r="A{i}" t="inlineStr"><is><t>{escape(uid)}</t></is></c>'
+            f'<c r="B{i}" t="inlineStr"><is><t>{escape(name)}</t></is></c>'
+            f'<c r="C{i}" t="inlineStr"><is><t>是</t></is></c>'
+            f'<c r="D{i}" t="inlineStr"><is><t>是</t></is></c>'
+            f'<c r="E{i}" t="inlineStr"><is><t>{escape(dealer_id)}</t></is></c>'
+            f'<c r="F{i}" t="inlineStr"><is><t>{escape(dealer_name)}</t></is></c>'
+            f'<c r="G{i}" t="inlineStr"><is><t></t></is></c>'
+            f'<c r="H{i}" t="inlineStr"><is><t></t></is></c>'
             f'</row>'
         )
 
-    new_sheet = "<sheetData>" + header_rows + "".join(body) + "</sheetData>"
+    new_sheet = "<sheetData>" + header + "".join(body) + "</sheetData>"
     xml = re.sub(r"<sheetData>.*?</sheetData>", new_sheet, xml, flags=re.S)
-    last = 2 + len(records)
+    last = 1 + len(records)
     xml = re.sub(r'<dimension ref="[^"]+"\s*/>', f'<dimension ref="A1:H{last}" />', xml)
 
     # Remove calcChain refs to avoid Excel repair popups after XML edit

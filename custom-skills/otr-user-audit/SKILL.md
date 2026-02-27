@@ -1,6 +1,6 @@
 ---
 name: otr-user-audit
-description: Convert 用户信息 Excel files into the OTR 用户审核表 template format. Use when the user asks to map user rows into the OTR 8-column sheet, dedupe by 用户ID, preserve template styles/formulas, and output with filename `OTR 用户审核表YYYY年MM月.xlsx`.
+description: Convert 用户信息 Excel files into OTR 用户审核表 output. Use when the user asks to map user rows into the OTR 8-column sheet, dedupe by 用户ID, and output with filename `OTR 用户审核表YYYY年MM月.xlsx` without preserving template header styles/formulas.
 ---
 
 # OTR User Audit
@@ -13,7 +13,7 @@ Use this skill to generate OTR audit sheets from a 用户信息 source workbook 
    - `A` -> 用户ID
    - `E+F` -> 中文姓名 (fallback `C+D`)
 2. Dedupe by 用户ID by default.
-3. Write rows into OTR template columns A-H:
+3. Write rows into OTR 8 columns A-H:
    - A 用户ID
    - B 用户姓名
    - C `是`
@@ -21,8 +21,8 @@ Use this skill to generate OTR audit sheets from a 用户信息 source workbook 
    - E 经销商ID
    - F 经销商名称
    - G 空
-   - H 删除声明公式
-4. Keep first two template header rows unchanged.
+   - H 空
+4. Do not preserve template header styles/formulas; output plain table data.
 5. Output file name: `OTR 用户审核表YYYY年MM月.xlsx` unless user overrides.
 
 ## Commands
