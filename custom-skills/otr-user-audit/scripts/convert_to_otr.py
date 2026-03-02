@@ -7,6 +7,7 @@ import datetime as dt
 import re
 import zipfile
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from xml.sax.saxutils import escape
 
 NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
@@ -21,8 +22,31 @@ def get_sheet_path(zf: zipfile.ZipFile) -> str:
     return "xl/" + relmap[s.attrib[f"{{{RNS}}}id"]]
 
 
+def read_shared_strings(zf: zipfile.ZipFile):
+    if "xl/sharedStrings.xml" not in zf.namelist():
+        return []
+    root = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+    return ["".join((x.text or "") for x in si.findall(f".//{{{NS}}}t")) for si in root.findall(f"{{{NS}}}si")]
+
+
+def cell_text(c, shared_strings):
+    t = c.attrib.get("t")
+    if t == "inlineStr":
+        return "".join((x.text or "") for x in c.findall(f".//{{{NS}}}t")).strip()
+    v = c.find(f"{{{NS}}}v")
+    if v is None:
+        return ""
+    txt = (v.text or "").strip()
+    if t == "s" and txt.isdigit():
+        i = int(txt)
+        if 0 <= i < len(shared_strings):
+            return shared_strings[i].strip()
+    return txt
+
+
 def read_user_records(user_xlsx: str, dedupe: bool):
     zf = zipfile.ZipFile(user_xlsx)
+    shared = read_shared_strings(zf)
     sheet = ET.fromstring(zf.read(get_sheet_path(zf)))
     rows = sheet.findall(f".//{{{NS}}}sheetData/{{{NS}}}row")
     items = []
@@ -34,16 +58,7 @@ def read_user_records(user_xlsx: str, dedupe: bool):
             m = re.match(r"[A-Z]+", ref)
             if not m:
                 continue
-            col = m.group(0)
-            t = c.attrib.get("t")
-            txt = ""
-            if t == "inlineStr":
-                txt = "".join((x.text or "") for x in c.findall(f".//{{{NS}}}t"))
-            else:
-                v = c.find(f"{{{NS}}}v")
-                if v is not None:
-                    txt = v.text or ""
-            vals[col] = txt.strip()
+            vals[m.group(0)] = cell_text(c, shared)
 
         uid = vals.get("A", "").strip()
         if not uid or uid == "GEMS_ID":
@@ -71,7 +86,6 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
     sheet_path = get_sheet_path(zf)
     xml = zf.read(sheet_path).decode("utf-8")
 
-    # Plain output (no template header/style/formula reuse)
     header = (
         '<row r="1" spans="1:8">'
         '<c r="A1" t="inlineStr"><is><t>用户ID</t></is></c>'
@@ -105,7 +119,6 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
     last = 1 + len(records)
     xml = re.sub(r'<dimension ref="[^"]+"\s*/>', f'<dimension ref="A1:H{last}" />', xml)
 
-    # Remove calcChain refs to avoid Excel repair popups after XML edit
     content_types = zf.read("[Content_Types].xml").decode("utf-8")
     content_types = re.sub(
         r'<Override PartName="/xl/calcChain.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain\+xml"\s*/>',
@@ -138,10 +151,14 @@ def default_output_name():
     return f"OTR 用户审核表{now.year}年{now.month:02d}月.xlsx"
 
 
+def default_template_path():
+    return str(Path(__file__).resolve().parent.parent / "examples" / "OTR-template-new.xlsx")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--user", required=True, help="用户信息.xlsx")
-    ap.add_argument("--template", required=True, help="OTR模板.xlsx")
+    ap.add_argument("--template", default=default_template_path(), help="OTR模板.xlsx（可省略，默认使用examples内置模板）")
     ap.add_argument("--out", default=default_output_name(), help="输出文件路径")
     ap.add_argument("--dedupe", action="store_true", default=True, help="按用户ID去重(默认开)")
     ap.add_argument("--no-dedupe", action="store_true", help="关闭去重")

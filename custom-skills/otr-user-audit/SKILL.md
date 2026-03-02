@@ -26,15 +26,14 @@ Use this skill to generate OTR audit sheets from a 用户信息 source workbook 
 5. Output file name: `OTR 用户审核表YYYY年MM月.xlsx` unless user overrides.
 
 ## Commands
-Run converter script:
+Run converter script (template is built-in by default):
 
 ```bash
 python3 scripts/convert_to_otr.py \
-  --user /path/用户信息.xlsx \
-  --template /path/OTR模板.xlsx
+  --user /path/用户信息.xlsx
 ```
 
-Override output and dealer info:
+Override output, template and dealer info:
 
 ```bash
 python3 scripts/convert_to_otr.py \
