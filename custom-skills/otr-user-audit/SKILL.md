@@ -16,12 +16,12 @@ Use this skill to generate OTR audit sheets from a 用户信息 source workbook 
 3. Write rows into OTR 8 columns A-H:
    - A 用户ID
    - B 用户姓名
-   - C `是`
-   - D `是`
-   - E 经销商ID
-   - F 经销商名称
-   - G 空
-   - H 空
+   - C `是`（在职）
+   - D `是`（使用OTR）
+   - E `是`（岗位匹配关系已调整）
+   - F `是`（OTR权限已调整）
+   - G 经销商ID
+   - H 经销商名称
 4. Do not preserve template header styles/formulas; output plain table data.
 5. Output file name: `OTR 用户审核表YYYY年MM月.xlsx` unless user overrides.
 

@@ -78,10 +78,10 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
         '<c r="B1" t="inlineStr"><is><t>用户姓名</t></is></c>'
         '<c r="C1" t="inlineStr"><is><t>DIC是否在职</t></is></c>'
         '<c r="D1" t="inlineStr"><is><t>是否使用OTR+</t></is></c>'
-        '<c r="E1" t="inlineStr"><is><t>经销商ID</t></is></c>'
-        '<c r="F1" t="inlineStr"><is><t>经销商名称</t></is></c>'
-        '<c r="G1" t="inlineStr"><is><t>特殊说明</t></is></c>'
-        '<c r="H1" t="inlineStr"><is><t>声明</t></is></c>'
+        '<c r="E1" t="inlineStr"><is><t>是否已审查DIC和OTR+岗位匹配关系并做了相关调整</t></is></c>'
+        '<c r="F1" t="inlineStr"><is><t>是否已审查用户OTR+权限并做了相关调整</t></is></c>'
+        '<c r="G1" t="inlineStr"><is><t>经销商ID</t></is></c>'
+        '<c r="H1" t="inlineStr"><is><t>经销商名称</t></is></c>'
         '</row>'
     )
 
@@ -93,10 +93,10 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
             f'<c r="B{i}" t="inlineStr"><is><t>{escape(name)}</t></is></c>'
             f'<c r="C{i}" t="inlineStr"><is><t>是</t></is></c>'
             f'<c r="D{i}" t="inlineStr"><is><t>是</t></is></c>'
-            f'<c r="E{i}" t="inlineStr"><is><t>{escape(dealer_id)}</t></is></c>'
-            f'<c r="F{i}" t="inlineStr"><is><t>{escape(dealer_name)}</t></is></c>'
-            f'<c r="G{i}" t="inlineStr"><is><t></t></is></c>'
-            f'<c r="H{i}" t="inlineStr"><is><t></t></is></c>'
+            f'<c r="E{i}" t="inlineStr"><is><t>是</t></is></c>'
+            f'<c r="F{i}" t="inlineStr"><is><t>是</t></is></c>'
+            f'<c r="G{i}" t="inlineStr"><is><t>{escape(dealer_id)}</t></is></c>'
+            f'<c r="H{i}" t="inlineStr"><is><t>{escape(dealer_name)}</t></is></c>'
             f'</row>'
         )
 
