@@ -166,8 +166,20 @@ def main():
     ap.add_argument("--dealer-name", default="佛山中升睿之星汽车销售服务有限公司")
     args = ap.parse_args()
 
+    if not Path(args.user).exists():
+        raise SystemExit(f"ERROR: 用户信息文件不存在: {args.user}")
+    if not Path(args.template).exists():
+        raise SystemExit(f"ERROR: 模板文件不存在: {args.template}")
+
     dedupe = False if args.no_dedupe else True
     records = read_user_records(args.user, dedupe=dedupe)
+    if not records:
+        raise SystemExit("ERROR: 未读取到有效用户数据。请检查用户文件是否包含A列用户ID和姓名列（E/F或C/D）。")
+
+    empty_ab = sum(1 for uid, name in records if (not uid.strip()) or (not name.strip()))
+    if empty_ab:
+        raise SystemExit(f"ERROR: 检测到{empty_ab}条记录的A/B可能为空，请检查源文件编码与列映射。")
+
     render_with_template(args.template, records, args.dealer_id, args.dealer_name, args.out)
     print(f"OK: {args.out} (rows={len(records)})")
 
