@@ -118,6 +118,8 @@ def render_with_template(template_xlsx: str, records, dealer_id: str, dealer_nam
     xml = re.sub(r"<sheetData>.*?</sheetData>", new_sheet, xml, flags=re.S)
     last = 1 + len(records)
     xml = re.sub(r'<dimension ref="[^"]+"\s*/>', f'<dimension ref="A1:H{last}" />', xml)
+    # Remove template merged header (A1:H1), otherwise B-H header text is visually hidden
+    xml = re.sub(r"<mergeCells[^>]*>.*?</mergeCells>", "", xml, flags=re.S)
 
     content_types = zf.read("[Content_Types].xml").decode("utf-8")
     content_types = re.sub(
